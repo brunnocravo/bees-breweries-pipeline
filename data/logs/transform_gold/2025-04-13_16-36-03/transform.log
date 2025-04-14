@@ -1,0 +1,11 @@
+[2025-04-13 16:36:03]  Execução iniciada: 2025-04-13_16-36-03
+[2025-04-13 16:36:03]  Lendo dados da Silver: data/silver/2025-04-13_16-31-37
+[2025-04-13 16:36:05]  Ignorando arquivo inválido: data/silver/2025-04-13_16-31-37\country=United_States\state=Missouri\7de9b2a064f24940a2f7e5849f037c48-0.parquet — Couldn't deserialize thrift: TProtocolException: Invalid data
+Deserializing page header failed.
+
+[2025-04-13 16:36:05]  Colunas disponíveis: ['id', 'name', 'brewery_type', 'city', 'latitude', 'longitude', 'postal_code', 'phone', 'website_url', 'country', 'state']
+[2025-04-13 16:36:05]  Total de registros lidos: 8227
+[2025-04-13 16:36:05]  Dados agregados salvos com sucesso.
+[2025-04-13 16:36:05]  Arquivo Parquet salvo em: data/gold/2025-04-13_16-36-03\aggregated_breweries.parquet
+[2025-04-13 16:36:05]  Total de linhas agregadas: 398
+[2025-04-13 16:36:05]  Execução finalizada.

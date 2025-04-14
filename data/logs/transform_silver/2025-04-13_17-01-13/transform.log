@@ -1,0 +1,6 @@
+[2025-04-13 17:03:21]  Execução iniciada: 2025-04-13_17-01-13
+[2025-04-13 17:03:21]  Lendo dados da Bronze: data/bronze/2025-04-13_17-01-13\breweries_raw.json
+[2025-04-13 17:03:22]  Dados transformados com sucesso.
+[2025-04-13 17:03:22]  Arquivo Parquet salvo em: data/silver/2025-04-13_17-01-13
+[2025-04-13 17:03:22]  Total de registros processados: 8369
+[2025-04-13 17:03:22]  Execução finalizada.
