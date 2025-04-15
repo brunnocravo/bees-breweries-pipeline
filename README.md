@@ -1,124 +1,78 @@
-BEES Data Engineering Case — Breweries Pipeline
-
-Visão Geral
-
-Este projeto tem como objetivo construir um pipeline de dados orquestrado com base na arquitetura Medallion (Bronze, Silver e Gold), utilizando dados da API pública Open Brewery DB. A solução contempla extração, transformação, agregação e persistência dos dados em um data lake local, com testes automatizados e orquestração via Apache Airflow em ambiente Docker.
+Breweries ETL Pipeline
+Este repositório contém a solução desenvolvida para o case técnico de Engenharia de Dados proposto pela equipe de recrutamento. O objetivo é construir um pipeline de dados utilizando a arquitetura Medallion (Bronze → Silver → Gold), com orquestração via Apache Airflow em ambiente Docker, além de testes automatizados com pytest e integração contínua (CI/CD) com GitHub Actions.
+________________________________________
+Estrutura do Projeto
+├── dags/                  # Scripts de extração, transformação (silver/gold) e DAG do Airflow
+├── data/                  # Diretório local de dados (excluído do Git pelo .gitignore)
+├── tests/                 # Scripts de teste com pytest
+├── .github/workflows/     # Arquivo de workflow CI para execução de testes
+├── docker-compose.yaml    # Infraestrutura do Airflow com Docker
+├── main.py                # Execução local opcional do pipeline completo
+├── requirements.txt       # Bibliotecas necessárias para rodar o projeto
+└── README.md              # Documentação do projeto
+________________________________________
 
 Tecnologias Utilizadas
+•	Python 3.8+
+•	Pandas e PyArrow para manipulação e escrita de dados
+•	Apache Airflow para orquestração
+•	Docker e Docker Compose para infraestrutura
+•	GitHub Actions para CI/CD com testes automatizados
+•	pytest para garantir a integridade dos scripts ETL
+A linguagem Python foi escolhida por sua simplicidade, ampla adoção em projetos de ETL e total capacidade de lidar com o volume atual de dados retornado pela API, utilizando bibliotecas como pandas. No entanto, caso haja um crescimento significativo no volume de dados, o projeto pode ser facilmente escalado com o uso de PySpark, já que o ecossistema Python possui integração nativa com frameworks distribuídos.________________________________________
+Instalação do Ambiente
+# Clone o repositório
+$ git clone https://github.com/brunnocravo/bees-breweries-pipeline.git
+$ cd bees-breweries-pipeline
 
-Python 3.10
+# Crie um ambiente virtual (opcional, recomendado)
+$ python -m venv venv
+$ source venv/bin/activate  # ou venv\Scripts\activate no Windows
 
-Apache Airflow
-
-Docker e Docker Compose
-
-Pandas
-
-PyArrow
-
-Pytest
-
-Requests
-
-Unidecode
-
-Estrutura do Projeto
-
-projeto_brew/
-├── dags/
-│   ├── extract_task.py
-│   ├── silver_task.py
-│   ├── gold_task.py
-│   └── dag_breweries.py
-├── data/
-│   ├── bronze/
-│   ├── silver/
-│   └── gold/
-├── logs/
-│   ├── extract/
-│   ├── transform_silver/
-│   └── transform_gold/
-├── tests/
-│   ├── test_extract.py
-│   ├── test_silver_task.py
-│   └── test_gold_task.py
-├── main.py
-├── docker-compose.yaml
-├── requirements.txt
-└── README.md
-
-Arquitetura do Pipeline
-
-Bronze: Extração de dados da API Open Brewery DB, com persistência em JSON e CSV, versionados por timestamp.
-
-Silver: Transformação dos dados com limpeza e padronização. Armazenamento em formato Parquet particionado por country e state.
-
-Gold: Agregação dos dados com contagem de cervejarias por tipo e localização. Resultado salvo em Parquet único, particionado por data de execução.
-
-Execução Local
-
-1. Clonar o repositório
-
-git clone https://github.com/seuusuario/projeto_brew.git
-cd projeto_brew
-
-2. Criar ambiente virtual e instalar dependências
-
-python -m venv venv
-source venv/bin/activate  # ou venv\Scripts\activate no Windows
-pip install -r requirements.txt
-
-3. Executar o pipeline manualmente
-
+# Instale as dependências
+$ pip install -r requirements.txt
+________________________________________
+Execução do Pipeline Local (main.py)
+Embora o pipeline seja orquestrado com Airflow, é possível testar a execução localmente por meio do script main.py. Isso permite verificar o comportamento completo do fluxo de dados antes de orquestrá-lo.
 python main.py
-
-Os dados serão salvos em data/bronze, data/silver e data/gold, e os logs por camada estarão em logs/.
-
-Execução com Docker + Airflow
-
-1. Subir o ambiente
-
-docker-compose up --build
-
-2. Acessar o Airflow
-
-Abrir o navegador em: http://localhost:8080
-
-Usuário: admin
-
-Senha: admin
-
-3. Executar a DAG
-
-A DAG dag_breweries estará disponível na interface. Ela executa as etapas de extração, transformação e agregação automaticamente.
+Esse script executa:
+1.	Extração da API Open Brewery DB (Bronze)
+2.	Transformação para Parquet particionado por país e estado (Silver)
+3.	Agregações por país e estado (Gold)
+________________________________________
+Arquitetura Medallion (Bronze, Silver, Gold)
+Bronze Layer
+Armazena os dados brutos da API em JSON e CSV (esse último para rápido entendimento colunar dos dados).
+Silver Layer
+Converte os dados brutos para o formato Parquet, com particionamento por country e state para otimizar consultas analíticas e garantir performance do datalake.
+Gold Layer
+Agrega os dados por país e estado, gerando um Parquet final com a métrica total_breweries, ideal para dashboards e análises de alto nível.
+Esse particionamento por estado foi definido para equilibrar granularidade e performance, bem como para garantir uma lógica mais adaptável ao negócio, uma vez que, dentro de um mesmo país, há diferenças econômicas, sociais e legais relevantes.
+________________________________________
+Logs
+Cada etapa do ETL (extração, transformação silver, transformação gold) gera um log em formato .log em subpastas dentro de data/logs/, organizadas por etapa e data/hora da execução. É também gerado um log geral da execução do airflow.
+Eles estão incluídos no diretório data/logs/.
 
 Testes Automatizados
-
-Os testes estão localizados na pasta tests/ e cobrem as três etapas do pipeline. Para executá-los:
-
-pytest
-
-Monitoramento e Alertas
-
-O pipeline conta com geração de logs por execução, armazenados em pastas organizadas por timestamp. Em um ambiente de produção, o monitoramento pode ser estendido com:
-
-Configuração de alertas por e-mail ou Slack no Airflow
-
-Dashboards para acompanhamento de execuções
-
-Validações de integridade e esquema dos dados
-
-Possíveis Extensões Futuras
-
-Integração com armazenamento em nuvem (ex: S3, GCS)
-
-CI/CD com GitHub Actions para execução automatizada de testes
-
-Implementação de notificações automáticas
-
-Conversão para Delta Lake
-
-Considerações Finais
-
-Este projeto demonstra a construção de um pipeline de dados completo, com foco em modularidade, versionamento, testes e arquitetura em camadas. Está preparado para ser estendido a ambientes em nuvem e integração com ferramentas de monitoramento e CI/CD.
-
+Os testes foram desenvolvidos com pytest e estão localizados na pasta tests/. São responsáveis por validar:
+•	A criação correta dos arquivos nas camadas Bronze, Silver e Gold
+•	O funcionamento dos logs por etapa
+•	A consistência dos dados transformados e agregados
+Para rodar os testes localmente:
+pytest tests/
+________________________________________
+Integração Contínua (CI/CD)
+Toda vez que um commit ou pull request é feito na branch main, o GitHub Actions executa automaticamente os testes do projeto, garantindo que nenhuma alteração incorreta seja inserida no pipeline.
+O workflow está definido no arquivo:
+.github/workflows/python-app.yml
+________________________________________
+Orquestração com Airflow
+O pipeline completo está definido na DAG brewery_dag.py, localizada na pasta dags/. O ambiente do Airflow é iniciado com Docker Compose:
+docker-compose up --build
+A interface do Airflow estará disponível em http://localhost:8080. Basta ativar a DAG brewery_dag para que o processo seja executado conforme configurado.
+________________________________________
+Dados Utilizados
+Os dados são coletados a partir da API pública Open Brewery DB, que fornece informações sobre cervejarias nos EUA e em outros países. Nenhum dado sensível é manipulado.
+________________________________________
+Autor
+Brunno Cravo Engenheiro de Dados | LinkedIn | GitHub
