@@ -8,8 +8,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from gold_task import transform_to_gold
 
 def test_transform_gold_creates_aggregated_parquet_and_log(tmp_path):
+    execution_time = "2024-01-01_00-00-00"
+
     # Criar estrutura da Silver com partições
-    silver_dir = tmp_path / "silver" / "2024-01-01_00-00-00" / "country=United_States" / "state=California"
+    silver_dir = tmp_path / "silver" / execution_time / "country=United_States" / "state=California"
     silver_dir.mkdir(parents=True)
 
     df_mock = pd.DataFrame([
@@ -37,11 +39,11 @@ def test_transform_gold_creates_aggregated_parquet_and_log(tmp_path):
         silver_base_path=str(tmp_path / "silver"),
         gold_base_path=str(gold_dir),
         logs_base_path=str(logs_dir),
-        execution_time="2024-01-01_00-00-00"
+        execution_time=execution_time
     )
 
     # Verificar se o Parquet final foi criado
-    expected_output = gold_dir / "2024-01-01_00-00-00" / "aggregated_breweries.parquet"
+    expected_output = gold_dir / execution_time / "aggregated_breweries.parquet"
     assert expected_output.exists(), "Arquivo agregado não foi criado"
 
     # Verificar conteúdo do Parquet agregado
@@ -50,5 +52,5 @@ def test_transform_gold_creates_aggregated_parquet_and_log(tmp_path):
     assert df_result.iloc[0]["total_breweries"] == 2
 
     # Verificar se o log foi criado
-    log_file = logs_dir / "2024-01-01_00-00-00" / "transform.log"
+    log_file = logs_dir / execution_time / "transform.log"
     assert log_file.exists(), "Arquivo de log não foi criado"

@@ -11,11 +11,8 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
     if execution_time is None:
         execution_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Definir diretórios de entrada e saída
-    bronze_dirs = sorted(os.listdir(bronze_path))
-    latest_bronze_dir = bronze_dirs[-1]
-    input_path = os.path.join(bronze_path, latest_bronze_dir, "breweries_raw.json")
-
+    # Caminhos com base no execution_time
+    input_path = os.path.join(bronze_path, execution_time, "breweries_raw.json")
     output_path = os.path.join(silver_base_path, execution_time)
     log_dir = os.path.join(logs_base_path, execution_time)
     log_file = os.path.join(log_dir, "silver.log")
@@ -23,7 +20,6 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
     os.makedirs(output_path, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
 
-    # Função de log
     def log(msg):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         full_msg = f"[{timestamp}] {msg}"
@@ -35,7 +31,6 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
         log(f" Execução iniciada: {execution_time}")
         log(f" Lendo dados da Bronze: {input_path}")
 
-        # Leitura e transformação
         df = pd.read_json(input_path)
 
         df["country"] = df["country"].apply(lambda x: unidecode(str(x)).strip().replace(" ", "_"))
@@ -50,7 +45,6 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
         df_clean = df[cols_to_keep].copy()
         df_clean = df_clean[df_clean["country"].notna() & df_clean["state"].notna()]
 
-        # Salvar em Parquet particionado
         df_clean.to_parquet(
             output_path,
             index=False,
@@ -63,8 +57,9 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
         log(f" Execução finalizada.")
 
     except Exception as e:
-        log(f" ERRO NA EXECUÇÃO: {str(e)}")
+        log(f" ❌ ERRO NA EXECUÇÃO: {str(e)}")
         raise e
+
 
 if __name__ == "__main__":
     transform_to_silver()

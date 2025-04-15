@@ -3,7 +3,7 @@ import os
 import glob
 from datetime import datetime
 import pyarrow.parquet as pq
-
+from pathlib import Path
 
 def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
                       gold_base_path="/opt/airflow/data/gold/",
@@ -13,19 +13,18 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
     if execution_time is None:
         execution_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Definir caminhos
-    silver_dirs = sorted(os.listdir(silver_base_path))
-    latest_silver_dir = silver_dirs[-1]
-    silver_path = os.path.join(silver_base_path, latest_silver_dir)
+    silver_base_path = Path(silver_base_path)
+    gold_base_path = Path(gold_base_path)
+    logs_base_path = Path(logs_base_path)
 
-    output_path = os.path.join(gold_base_path, execution_time)
-    log_dir = os.path.join(logs_base_path, execution_time)
-    log_file = os.path.join(log_dir, "gold.log")
+    silver_path = silver_base_path / execution_time
+    output_path = gold_base_path / execution_time
+    log_dir = logs_base_path / execution_time
+    log_file = log_dir / "gold.log"
 
-    os.makedirs(output_path, exist_ok=True)
-    os.makedirs(log_dir, exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
 
-    # Função de log
     def log(msg):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         full_msg = f"[{timestamp}] {msg}"
@@ -38,7 +37,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
         log(f" Lendo dados da Silver: {silver_path}")
 
         def read_valid_parquets_with_partition_info(path):
-            parquet_files = glob.glob(os.path.join(path, "**/*.parquet"), recursive=True)
+            parquet_files = glob.glob(str(path / "**" / "*.parquet"), recursive=True)
             valid_dfs = []
 
             for f in parquet_files:
@@ -47,21 +46,18 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
                     country = next((p.split("=")[1] for p in parts if p.startswith("country=")), None)
                     state = next((p.split("=")[1] for p in parts if p.startswith("state=")), None)
 
-                    pq.read_table(f)  # Verifica se é um Parquet válido
+                    pq.read_table(f)
                     df_temp = pd.read_parquet(f)
                     df_temp["country"] = country
                     df_temp["state"] = state
-
                     valid_dfs.append(df_temp)
                 except Exception as e:
                     log(f" Ignorando arquivo inválido: {f} — {e}")
 
             if not valid_dfs:
                 raise ValueError(" Nenhum arquivo Parquet válido foi encontrado.")
-
             return pd.concat(valid_dfs, ignore_index=True)
 
-        # Carregar dados válidos e agregá-los
         df = read_valid_parquets_with_partition_info(silver_path)
 
         log(f" Colunas disponíveis: {df.columns.tolist()}")
@@ -73,7 +69,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
               .reset_index()
         )
 
-        output_file = os.path.join(output_path, "aggregated_breweries.parquet")
+        output_file = output_path / "aggregated_breweries.parquet"
         df_gold.to_parquet(output_file, index=False)
 
         log(f" Dados agregados salvos com sucesso.")
@@ -82,9 +78,5 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
         log(f" Execução finalizada.")
 
     except Exception as e:
-        log(f" ERRO NA EXECUÇÃO: {str(e)}")
+        log(f" ❌ ERRO NA EXECUÇÃO: {str(e)}")
         raise e
-
-
-if __name__ == "__main__":
-    transform_to_gold()
