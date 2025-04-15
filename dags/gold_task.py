@@ -4,10 +4,10 @@ import glob
 from datetime import datetime
 import pyarrow.parquet as pq
 
-def transform_to_gold(silver_base_path="data/silver/",
-                      gold_base_path="data/gold/",
-                      logs_base_path="data/logs/transform_gold/",
-                      execution_time=None):
+def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
+                      gold_base_path="/opt/airflow/data/gold/",
+                      logs_base_path="/opt/airflow/data/logs/transform_gold/",
+                    execution_time=None):
     if execution_time is None:
         execution_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 

@@ -4,8 +4,8 @@ import os
 import pandas as pd
 from datetime import datetime
 
-def extract_all_breweries(base_path="data/bronze/",
-                          logs_base_path="data/logs/extract/",
+def extract_all_breweries(base_path="/opt/airflow/data/bronze/",
+                          logs_base_path="/opt/airflow/data/logs/extract/",
                           execution_time=None,
                           limit_pages=None):
 

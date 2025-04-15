@@ -3,9 +3,9 @@ import os
 from datetime import datetime
 from unidecode import unidecode
 
-def transform_to_silver(bronze_path="data/bronze/",
-                        silver_base_path="data/silver/",
-                        logs_base_path="data/logs/transform_silver/",
+def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
+                        silver_base_path="/opt/airflow/data/silver/",
+                        logs_base_path="/opt/airflow/data/logs/transform_silver/",
                         execution_time=None):
     if execution_time is None:
         execution_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

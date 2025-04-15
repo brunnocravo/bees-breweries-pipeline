@@ -2,5 +2,3 @@ pandas
 requests
 pyarrow
 unidecode
-apache-airflow==2.7.2
-pytest

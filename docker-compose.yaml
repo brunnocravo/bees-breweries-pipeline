@@ -11,6 +11,24 @@ services:
     volumes:
       - postgres_db:/var/lib/postgresql/data
 
+  airflow-init:
+    image: apache/airflow:2.7.2-python3.8
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: 'AGbeES2Qm5GdVsEv2ypFeyKlAKAp2ljCCvR3v1CiZj4='
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    entrypoint: >
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Brunno --lastname Cravo --role Admin --email brunno@airflow.com
+      "
+
   webserver:
     image: apache/airflow:2.7.2-python3.8
     container_name: airflow_webserver
@@ -18,20 +36,19 @@ services:
       - postgres
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: 'your-generated-fernet-key'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./requirements.txt:/requirements.txt
+      - ./data:/opt/airflow/data 
     ports:
       - "8080:8080"
     command: >
-      bash -c "
-        pip install -r /requirements.txt &&
-        airflow webserver"
+      bash -c "pip install -r /requirements.txt && airflow webserver"
 
   scheduler:
     image: apache/airflow:2.7.2-python3.8
@@ -40,16 +57,16 @@ services:
       - webserver
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: 'your-generated-fernet-key'
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./requirements.txt:/requirements.txt
+      - ./data:/opt/airflow/data
     command: >
-      bash -c "
-        pip install -r /requirements.txt &&
-        airflow scheduler"
+      bash -c "pip install -r /requirements.txt && airflow scheduler"
 
 volumes:
   postgres_db:
