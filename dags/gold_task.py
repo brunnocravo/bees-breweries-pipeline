@@ -13,6 +13,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
     if execution_time is None:
         execution_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+    # Caminhos formatados com pathlib
     silver_base_path = Path(silver_base_path)
     gold_base_path = Path(gold_base_path)
     logs_base_path = Path(logs_base_path)
@@ -22,6 +23,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
     log_dir = logs_base_path / execution_time
     log_file = log_dir / "gold.log"
 
+    # Garante a existência dos diretórios
     output_path.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -29,8 +31,11 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         full_msg = f"[{timestamp}] {msg}"
         print(full_msg)
-        with open(log_file, "a", encoding="utf-8") as f:
-            f.write(full_msg + "\n")
+        try:
+            with open(log_file, "a", encoding="utf-8") as f:
+                f.write(full_msg + "\n")
+        except Exception as log_err:
+            print(f"❌ Falha ao escrever no log: {log_err}")
 
     try:
         log(f" Execução iniciada: {execution_time}")
@@ -46,7 +51,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
                     country = next((p.split("=")[1] for p in parts if p.startswith("country=")), None)
                     state = next((p.split("=")[1] for p in parts if p.startswith("state=")), None)
 
-                    pq.read_table(f)
+                    pq.read_table(f)  # Verifica validade
                     df_temp = pd.read_parquet(f)
                     df_temp["country"] = country
                     df_temp["state"] = state
@@ -80,3 +85,7 @@ def transform_to_gold(silver_base_path="/opt/airflow/data/silver/",
     except Exception as e:
         log(f" ❌ ERRO NA EXECUÇÃO: {str(e)}")
         raise e
+
+
+if __name__ == "__main__":
+    transform_to_gold()

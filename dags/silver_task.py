@@ -15,17 +15,22 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
     input_path = os.path.join(bronze_path, execution_time, "breweries_raw.json")
     output_path = os.path.join(silver_base_path, execution_time)
     log_dir = os.path.join(logs_base_path, execution_time)
-    log_file = os.path.join(log_dir, "silver.log")
 
+    # Garante que o diretório de log e output existem
     os.makedirs(output_path, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
+
+    log_file = os.path.join(log_dir, "silver.log")
 
     def log(msg):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         full_msg = f"[{timestamp}] {msg}"
         print(full_msg)
-        with open(log_file, "a", encoding="utf-8") as f:
-            f.write(full_msg + "\n")
+        try:
+            with open(log_file, "a", encoding="utf-8") as f:
+                f.write(full_msg + "\n")
+        except Exception as e:
+            print(f"❌ Falha ao escrever no log: {e}")
 
     try:
         log(f" Execução iniciada: {execution_time}")
@@ -59,7 +64,6 @@ def transform_to_silver(bronze_path="/opt/airflow/data/bronze/",
     except Exception as e:
         log(f" ❌ ERRO NA EXECUÇÃO: {str(e)}")
         raise e
-
 
 if __name__ == "__main__":
     transform_to_silver()

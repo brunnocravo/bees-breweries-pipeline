@@ -52,5 +52,5 @@ def test_transform_gold_creates_aggregated_parquet_and_log(tmp_path):
     assert df_result.iloc[0]["total_breweries"] == 2
 
     # Verificar se o log foi criado
-    log_file = logs_dir / execution_time / "transform.log"
+    log_file = logs_dir / execution_time / "gold.log"
     assert log_file.exists(), "Arquivo de log não foi criado"

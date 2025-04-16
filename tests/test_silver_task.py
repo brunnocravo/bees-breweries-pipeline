@@ -44,5 +44,5 @@ def test_transform_silver_creates_parquet_and_log(tmp_path):
     assert output_parquet_dir.exists(), "Diretório Parquet não foi criado"
 
     # Verificar se o log foi criado
-    log_file = logs_path / execution_time / "transform.log"
+    log_file = logs_path / execution_time / "silver.log"
     assert log_file.exists(), f"Log não foi criado em {log_file}"
