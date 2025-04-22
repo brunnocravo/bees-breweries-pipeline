@@ -13,6 +13,9 @@ ________________________________________
 ├── docker-compose.yaml    # Infraestrutura do Airflow com Docker
 ├── requirements.txt       # Bibliotecas necessárias para rodar o projeto
 └── README.md              # Documentação do projeto
+
+> Nota: neste projeto, todos os scripts — incluindo os módulos de extração, transformação e agregação — foram mantidos na pasta `dags/` para centralização e simplicidade durante o desenvolvimento e a orquestração via Airflow. Em projetos de maior escala ou em ambientes de produção, recomenda-se separá-los em subpastas específicas (`/src`, `/pipeline` etc.), visando maior organização, modularidade e escalabilidade.
+
 ```
 ________________________________________
 
